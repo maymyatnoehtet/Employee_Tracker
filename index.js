@@ -1,6 +1,8 @@
 // Import the modules require
 const express = require('express');
 const inquirer = require('inquirer');
+const db_password = require('./password.json');
+const mysql = require('mysql2');
 
 // Defining an array of question objects for user prompt
 const question = [ 
@@ -16,3 +18,14 @@ const question = [
 inquirer
     .prompt(question)
     .then(answer => console.log(answer));
+
+// Connect to database
+const db = mysql.createConnection(
+    {
+        host: 'localhost',
+        user: 'root',
+        password: db_password.password,
+        database: 'company_db'
+    },
+    console.log("Connected to the company_db database")
+);
