@@ -27,7 +27,7 @@ function start(){
         {
             type: 'list',
             name: 'todo',
-            message: 'What is the title of your project?',
+            message: 'What would you like to do?',
             choices: [
                         "View all departments", 
                         "View all roles", 
@@ -46,16 +46,48 @@ function start(){
 
 // Function to handle the user's choice
 function handle_choice(choice) {
+
     switch (choice.todo) {
+        case "View all departments":
+            viewAllDepartments();
+            break;
+    
+        case "View all roles":
+            viewAllRoles();
+            break;
+
         case "View all employees":
             viewAllEmployees();
             break;
-    
+
         default:
             console.log(choice.todo);
             console.log("Will be available later");
+            start();
             break;
     }
+}
+
+// Function to view all departments
+function viewAllDepartments() {
+    const query = "SELECT * FROM departments";
+    db.query(query, (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        // restart the application
+        start();
+    });
+}
+
+// Function to view all roles
+function viewAllRoles() {
+    const query = "SELECT * FROM roles";
+    db.query(query, (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        // restart the application
+        start();
+    });
 }
 
 // Function to view all employees

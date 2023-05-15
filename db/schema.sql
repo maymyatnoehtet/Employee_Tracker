@@ -17,8 +17,8 @@ CREATE TABLE departments (
 CREATE TABLE roles (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     job_title VARCHAR(100) NOT NULL,
-    department_id INT,
-    salary INT
+    salary INT,
+    department_id INT
 );
 
 -- Create employees table in company_db database
