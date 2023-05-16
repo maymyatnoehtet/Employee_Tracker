@@ -2,7 +2,7 @@
 ## SQL Challenge
 ## Description
 
-Video Link:
+Video Link: https://drive.google.com/file/d/11OODtmT8pt8MxMVO0vOOAOz7U8EwavQX/view?usp=sharing
 
 Repo Link: https://github.com/maymyatnoehtet/Employee_Tracker
 
