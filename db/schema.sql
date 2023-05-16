@@ -16,9 +16,12 @@ CREATE TABLE departments (
 -- Create roles table in company_db database
 CREATE TABLE roles (
     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    job_title VARCHAR(100) NOT NULL,
-    salary INT,
-    department_id INT
+    title VARCHAR(100) NOT NULL,
+    salary DECIMAL,
+    department_id INT,
+    FOREIGN KEY (department_id)
+    REFERENCES departments(id)
+    ON DELETE SET NULL
 );
 
 -- Create employees table in company_db database
@@ -27,6 +30,7 @@ CREATE TABLE employees (
     first_name VARCHAR(100) NOT NULL,
     last_name VARCHAR(100) NOT NULL,
     role_id INT NOT NULL,
-    manager_id INT
-);
+    manager_id INT NOT NULL,
+    FOREIGN KEY (role_id)
+    REFERENCES roles(id));
 

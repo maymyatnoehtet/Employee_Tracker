@@ -69,7 +69,11 @@ function handle_choice(choice) {
             break;
 
         case "Add a new employee":
-            console.log("soon");
+            addEmployee();
+            break;
+
+        case "Update an employee role":
+            updateEmployeeRole();
             break;
 
         default:
@@ -93,7 +97,10 @@ function viewAllDepartments() {
 
 // Function to view all roles
 function viewAllRoles() {
-    const query = "SELECT * FROM roles";
+    const query = 
+                "SELECT roles.title, roles.id, departments.department_name, roles.salary \
+                FROM roles \
+                JOIN departments on roles.department_id = departments.id";
     db.query(query, (err, res) => {
         if (err) throw err;
         console.table(res);
@@ -104,7 +111,14 @@ function viewAllRoles() {
 
 // Function to view all employees
 function viewAllEmployees() {
-    const query = `SELECT * FROM Employees`
+    const query =
+                "SELECT e.id, e.first_name, e.last_name, r.title,\
+                d.department_name, r.salary, \
+                CONCAT(m.first_name, ' ', m.last_name) AS manager \
+                FROM employees e \
+                LEFT JOIN roles r ON e.role_id = r.id \
+                LEFT JOIN departments d ON r.department_id = d.id \
+                LEFT JOIN employees m ON e.manager_id = m.id";
     db.query(query, (err, res) => {
         if (err) throw err;
         console.table(res);
@@ -123,14 +137,15 @@ function addDepartment() {
             message: "Enter the name of a new department:",
         })
         .then((answer) => {
-            // Construct the SQL query to insert the new department into the database
+            // Construct the SQL query 
+            // to insert the new department into the database
             const query = `INSERT INTO departments (department_name) 
                            VALUES ("${answer.name}")`;
             // Execute the SQL query
             db.query(query, err => {
                 if (err) throw err;
-                console.log(`${answer.name} department added to the database!`);
-                // Restart the application or perform any other necessary actions
+                console.log(`A new ${answer.name} department added to the database!`);
+                // Restart the application
                 start();
             });
         });
@@ -148,7 +163,7 @@ function addRole() {
             .prompt([
                 {
                     type: "input",
-                    name: "job_title",
+                    name: "title",
                     message: "Enter the title of the new role:",
                 },
                 {
@@ -164,36 +179,153 @@ function addRole() {
                 },
             ])
             .then((answers) => {
-                // Find the department object based on the user's choice
+                // Find the department based on the user's choice
                 const department = res.find(
                     (department) => department.department_name === answers.department
                 );
 
                 // Insert the new role into the roles table
                 const insert_Q = "INSERT INTO roles SET ?";
-                db.query(
-                    insert_Q,
-                    {
-                        job_title: answers.job_title,
-                        salary: answers.salary,
-                        department_id: department.id,
-                    },
-                    (err) => {
-                        if (err) throw err;
+                const values = {
+                    title: answers.title,
+                    salary: answers.salary,
+                    department_id: department.id
+                };
 
-                        console.log(
-                            `A new role ${answers.job_title} with salary ${answers.salary} in 
-                            the ${answers.department} department added to the database!`
-                        );
+                db.query(insert_Q, values, (err) => {
+                    if (err) throw err;
 
-                        // Restart the application
-                        start();
-                    }
-                );
+                    console.log(`A new role ${answers.title} is added to the database!`);
+
+                    // Restart the application
+                    start();
+                });
             });
     });
 }
 
+
+// Function to add employee
+function addEmployee() {
+    role_Q = "SELECT id, title FROM roles";
+    // Retrieve list of roles from the database
+    db.query(role_Q, (err, results) => {
+        if (err) throw err;
+        const roles = results.map(({ id, title }) => ({
+            name: title,
+            value: id,
+        }));
+
+        const employee_Q = 'SELECT id, CONCAT(first_name, " ", last_name) AS name FROM employees';
+        // Retrieve list of employees from the database to use as managers
+        db.query(employee_Q, (err, results) => {
+            if (err) throw err;
+
+            const managers = results.map(({ id, name }) => ({
+                name,
+                value: id,
+            }));
+
+            // Prompt the user for employee information
+            inquirer
+                .prompt([
+                    {
+                        type: "input",
+                        name: "firstName",
+                        message: "Enter the employee's first name:",
+                    },
+                    {
+                        type: "input",
+                        name: "lastName",
+                        message: "Enter the employee's last name:",
+                    },
+                    {
+                        type: "list",
+                        name: "roleID",
+                        message: "Select the employee role:",
+                        choices: roles,
+                    },
+                    {
+                        type: "list",
+                        name: "managerId",
+                        message: "Select the employee manager:",
+                        choices: [
+                            { name: "None", value: null },
+                            ...managers,
+                        ],
+                    },
+                ])
+                .then((answers) => {
+                    // Insert the employee into the database
+                    const insert_Q = "INSERT INTO employees SET ?";
+                    const values = {
+                        first_name: answers.firstName,
+                        last_name: answers.lastName,
+                        role_id: answers.roleID,
+                        manager_id: answers.managerId,
+                    };
+
+                    db.query(insert_Q, values, (err) => {
+                        if (err) throw err;
+                        console.log("Employee added successfully");
+                        start();
+                    });
+                })
+        });
+    });
+}
+
+// function to update an employee role
+function updateEmployeeRole() {
+    const employee_Q = 
+                    "SELECT e.id, e.first_name, e.last_name, r.title \
+                    FROM employees e\
+                    LEFT JOIN roles r ON e.role_id = r.id";
+                    
+    const role_Q = "SELECT * FROM roles";
+    db.query(employee_Q, (err, employee_res) => {
+        if (err) throw err;
+        db.query(role_Q, (err, role_res) => {
+            if (err) throw err;
+            inquirer
+                .prompt([
+                    {
+                        type: "list",
+                        name: "employee",
+                        message: "Select the employee to update:",
+                        choices: employee_res.map(
+                            (employee) => `${employee.first_name} ${employee.last_name}`
+                        ),
+                    },
+                    {
+                        type: "list",
+                        name: "role",
+                        message: "Select the new role:",
+                        choices: role_res.map((role) => role.title),
+                    },
+                ])
+                .then((answers) => {
+                    const employee = employee_res.find(
+                        (employee) =>
+                            `${employee.first_name} ${employee.last_name}` === answers.employee
+                    );
+                    const role = role_res.find(
+                        (role) => role.title === answers.role
+                    );
+                    const update_Q = "UPDATE employees SET role_id = ? WHERE id = ?";
+                    const values = [roles.id, employees.id]
+                    db.query(update_Q, values, (err) => {
+                        if (err) throw err;
+                        console.log(
+                            `Updated ${employee.first_name} ${employee.last_name}'s role to ${role.title} in the database!`
+                        );
+                        // restart the application
+                        start();
+                    });
+                });
+        });
+    });
+}
 
 
   
