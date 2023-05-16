@@ -7,6 +7,16 @@ Video Link:
 Repo Link: https://github.com/maymyatnoehtet/Employee_Tracker
 
 ## Installation
+1. Express.js Version 4.18.2
+2. Inquirer.js Version 8.2.4
+3. mysql2 Version 3.3.1
+
+## Usage Instruction
+1. Clone the repository
+2. Open integrated terminal
+3. npm install -> Installation
+4. node index.js to run the application
+5. Use 'UP' and 'DOWN' arrow keys on the keyboard to do selection.
 
 ## User Story
 
