@@ -65,7 +65,12 @@ function handle_choice(choice) {
             break;
 
         case "Add a new role":
-            // addRole();
+            addRole();
+            break;
+
+        case "Add a new employee":
+            console.log("soon");
+            break;
 
         default:
             console.log(choice.todo);
@@ -99,8 +104,8 @@ function viewAllRoles() {
 
 // Function to view all employees
 function viewAllEmployees() {
-    const sql_query = `SELECT * FROM Employees`
-    db.query(sql_query, (err, res) => {
+    const query = `SELECT * FROM Employees`
+    db.query(query, (err, res) => {
         if (err) throw err;
         console.table(res);
         // Restart the command-line
@@ -119,9 +124,10 @@ function addDepartment() {
         })
         .then((answer) => {
             // Construct the SQL query to insert the new department into the database
-            const query = `INSERT INTO departments (department_name) VALUES ("${answer.name}")`;
+            const query = `INSERT INTO departments (department_name) 
+                           VALUES ("${answer.name}")`;
             // Execute the SQL query
-            db.query(query, (err, res) => {
+            db.query(query, err => {
                 if (err) throw err;
                 console.log(`${answer.name} department added to the database!`);
                 // Restart the application or perform any other necessary actions
@@ -130,3 +136,64 @@ function addDepartment() {
         });
 }
 
+// Function to add role
+function addRole() {
+    // Retrieve all departments from the database
+    const query = "SELECT * FROM departments";
+    db.query(query, (err, res) => {
+        if (err) throw err;
+
+        // Prompt the user to enter the details for the new role
+        inquirer
+            .prompt([
+                {
+                    type: "input",
+                    name: "job_title",
+                    message: "Enter the title of the new role:",
+                },
+                {
+                    type: "input",
+                    name: "salary",
+                    message: "Enter the salary of the new role:",
+                },
+                {
+                    type: "list",
+                    name: "department",
+                    message: "Select the department for the new role:",
+                    choices: res.map((department) => department.department_name),
+                },
+            ])
+            .then((answers) => {
+                // Find the department object based on the user's choice
+                const department = res.find(
+                    (department) => department.department_name === answers.department
+                );
+
+                // Insert the new role into the roles table
+                const insert_Q = "INSERT INTO roles SET ?";
+                db.query(
+                    insert_Q,
+                    {
+                        job_title: answers.job_title,
+                        salary: answers.salary,
+                        department_id: department.id,
+                    },
+                    (err) => {
+                        if (err) throw err;
+
+                        console.log(
+                            `A new role ${answers.job_title} with salary ${answers.salary} in 
+                            the ${answers.department} department added to the database!`
+                        );
+
+                        // Restart the application
+                        start();
+                    }
+                );
+            });
+    });
+}
+
+
+
+  
