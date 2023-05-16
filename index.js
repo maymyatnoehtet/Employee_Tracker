@@ -222,7 +222,7 @@ function addEmployee() {
             if (err) throw err;
 
             const managers = results.map(({ id, name }) => ({
-                name,
+                name: name,
                 value: id,
             }));
 
@@ -275,18 +275,26 @@ function addEmployee() {
     });
 }
 
-// function to update an employee role
+// Function to update an employee role
 function updateEmployeeRole() {
-    const employee_Q = 
-                    "SELECT e.id, e.first_name, e.last_name, r.title \
-                    FROM employees e\
-                    LEFT JOIN roles r ON e.role_id = r.id";
-                    
+    // SQL query to select employee details and their associated roles
+    const employee_Q =
+        "SELECT e.id, e.first_name, e.last_name, r.title \
+        FROM employees e\
+        JOIN roles r ON e.role_id = r.id";
+
+    // SQL query to select all roles
     const role_Q = "SELECT * FROM roles";
+
+    // Query the database to get employee details and roles
     db.query(employee_Q, (err, employee_res) => {
         if (err) throw err;
+
+        // Query the database to get all roles
         db.query(role_Q, (err, role_res) => {
             if (err) throw err;
+
+            // Use inquirer to prompt the user for employee and role selection
             inquirer
                 .prompt([
                     {
@@ -305,27 +313,32 @@ function updateEmployeeRole() {
                     },
                 ])
                 .then((answers) => {
+                    // Find the selected employee and role from the responses
                     const employee = employee_res.find(
                         (employee) =>
                             `${employee.first_name} ${employee.last_name}` === answers.employee
                     );
-                    const role = role_res.find(
-                        (role) => role.title === answers.role
-                    );
+                    const role = role_res.find((role) => role.title === answers.role);
+
+                    // SQL query to update the employee's role
                     const update_Q = "UPDATE employees SET role_id = ? WHERE id = ?";
-                    const values = [role.id, employee.id]
+                    const values = [role.id, employee.id];
+
+                    // Execute the update query
                     db.query(update_Q, values, (err) => {
                         if (err) throw err;
                         console.log(
                             `Updated ${employee.first_name} ${employee.last_name}'s role to ${role.title} in the database!`
                         );
-                        // restart the application
+
+                        // Restart the application
                         start();
                     });
                 });
         });
     });
 }
+
 
 
   
