@@ -55,4 +55,8 @@ WHEN I choose to update an employee role
 THEN I am prompted to select an employee to update and their new role and this information is updated in the database
 ```
 
+## Future Development
+
+Current version doesn't handle data validation which means the new input data will not be validate before entering them into database. This can be fix in the future development.
+
 
