@@ -313,7 +313,7 @@ function updateEmployeeRole() {
                         (role) => role.title === answers.role
                     );
                     const update_Q = "UPDATE employees SET role_id = ? WHERE id = ?";
-                    const values = [roles.id, employees.id]
+                    const values = [role.id, employee.id]
                     db.query(update_Q, values, (err) => {
                         if (err) throw err;
                         console.log(
